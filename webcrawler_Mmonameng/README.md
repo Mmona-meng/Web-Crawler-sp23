@@ -18,6 +18,7 @@ Basically, it follows the steps
 - send POST request to login
 - use the HTML parser class to look for anchor tags and extracts their href attribute as the next URL to be crawled, look for the secret flags and extracts the secret flag from the inner text, look for the csrfmiddlewaretoken and extracts the token value
 - use Breath first search to crawl the website.
+- return all the secret flags
 
 Challenges faced:
 
@@ -40,3 +41,4 @@ Wenqiao and Huazhou helped on testing the code, including debugging the send_get
 Steps on how to run your code:
 
 For MacOS, simply run `python3 webcrawler.py [username] [password]`, you can pass in [name] and [NUID] of any of the three group members at the top.
+Now that the file trun into a executable file, you can run `./webcrawler [username] [password]` to run the code.
