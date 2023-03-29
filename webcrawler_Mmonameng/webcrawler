@@ -18,7 +18,7 @@ middlewaretoken = ""
 
 
 class FakebookHTMLParser(HTMLParser):
-    """
+    """g
     The FakebookHTMLParser extends the HTML Parser to parse through the server response for tags in search of more URLs and/or secret flags respectively.
     """
 
@@ -201,7 +201,22 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
 
             # Handle HTTP status codes
             if "HTTP/1.1 200 OK" not in response:
-                print("Error: Could not fetch URL -", new_url)
+                status_code = response.split()[1]
+
+                if status_code == "301":
+                    # HTTP redirect, try again with new URL
+                    new_url = response.split("Location: ")[1].split("\r\n")[0]
+                    if new_url not in visited_urls:
+                        to_be_crawled.append(new_url)
+                elif status_code in ("403", "404"):
+                    # Forbidden or not found, skip this URL
+                    print(f"Error: Could not fetch URL - {new_url}")
+                elif status_code == "500":
+                    # Internal server error, try again
+                    to_be_crawled.append(new_url)
+                else:
+                    print(
+                        f"Error: Unexpected status code - {status_code} for URL - {new_url}")
                 continue
 
             # Parse the response for URLs and secret flags
@@ -210,8 +225,8 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
 
     if len(secret_flags) == 5:
         print("All flags found!")
-        for flag in secret_flags:
-            print(flag)
+        for i, flag in enumerate(secret_flags):
+            print("Flag", i + 1, ":", flag)
     else:
         print("Could not find all flags.")
 
