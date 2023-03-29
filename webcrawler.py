@@ -1,34 +1,30 @@
+#!/usr/bin/env python3
+
+import cgi
 import socket
 import sys
 import ssl
 from collections import deque
 from html.parser import HTMLParser
 
-# use a data structure to track unique URLs already crawled
+# use a set to track unique URLs already crawled
 visited_urls = set()
-# use a data structure to track URLs to be crawled
+# use deque to track URLs to be crawled, and append the base URL /fakebook/ to be crawled
 to_be_crawled = deque(['/fakebook/'])
-# use a data structure to store unique secret flags found on the pages
+# use a set to store unique secret flags found on the pages
 secret_flags = set()
-# use a data structure to hold the middlewaretoken
+# use a list to hold the middlewaretoken
 middlewaretoken = ""
 
 
 class FakebookHTMLParser(HTMLParser):
-    """
-    The FakebookHTMLParser extends the HTML Parser to parse through the server response for tags in search of
-    more URLs and/or secret flags respectively.
-
-    You can write code for the following tasks
-    - look for the links in the HTML code that you will need to crawl, next.
-    - look for the secret flags among tags, and process them
-    - look for the csrfmiddlewaretoken, and process it.
+    """g
+    The FakebookHTMLParser extends the HTML Parser to parse through the server response for tags in search of more URLs and/or secret flags respectively.
     """
 
     def __init__(self):
         super().__init__()
         self.csrfmiddlewaretoken = None
-        self.count = 0
 
         """
         Method called by HTML Parser when start of new tag is encountered.
@@ -40,20 +36,21 @@ class FakebookHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             for name, value in attrs:
+                # Looks for anchor tags and extracts their href attribute as the next URL to be crawled.
                 if name == 'href' and '/fakebook/' in value and len(attrs) == 1:
                     to_be_crawled.append(value)
 
         elif tag == 'input':
             for name, value in attrs:
+                # Looks for the csrfmiddlewaretoken and extracts the token value.
                 if name == 'name' and value == 'csrfmiddlewaretoken':
                     for name, value in attrs:
                         if name == 'value':
                             self.csrfmiddlewaretoken = value
 
     def handle_data(self, data):
+        # Looks for the secret_flag class and extracts the secret flag from the inner text.
         if "FLAG" in data:
-            self.count += 1
-            print(data[6:] + " " + str(self.count))
             secret_flags.add(data.strip().split(":")[-1])
 
 
@@ -94,11 +91,11 @@ def create_socket():
 # this function will help you send the get request
 def send_get_request(path, sock, host, cookie1=None, cookie2=None):
     """
-    Sends GET request to the server with appropriate header fields, and handles cookies. Sends this header
-    file to the server using socket
+    Sends GET request to the server with appropriate header fields, and handles cookies. Sends this header file to the server using socket
     """
     headers = f"GET {path} HTTP/1.1\r\n{host}\r\n"
     cookies = ""
+    # add cookies to the header if they exist， and separate them with a semicolon
     if cookie1:
         cookies += f"{cookie1}"
     if cookie2:
@@ -117,7 +114,7 @@ def receive_msg(sock):
     """
     buffer_size = 4096  # Use a larger buffer size
     content_length = 0
-    received_msg = bytearray()
+    received_msg = bytearray()  # Use a bytearray to store the received data
     # keep receiving data until the content length is reached
     while True:
         response = sock.recv(buffer_size)
@@ -137,6 +134,7 @@ def receive_msg(sock):
                     break
         else:
             break
+    # convert the bytearray to a string
     received_msg = received_msg.decode('utf-8')
     return received_msg
 
@@ -184,9 +182,9 @@ def login_user(sock, path, host, body_len, body, cookie1=None, cookie2=None):
 
 def start_crawling(msg, sock, host, cookie3, cookie4):
     """
-    Implements the basic web crawler for this program.
     Uses the HTML Parser object to parse through the current URL in search for more URLs and/or secret flags until all secret flags are found for the user.
     Accounts for and appropriately handles different errors received when parsing through pages.
+    Use breadth-first search to crawl URLs, and keep track of visited URLs to avoid infinite loops.
     """
     parser = FakebookHTMLParser()
     parser.csrfmiddlewaretoken = middlewaretoken
@@ -203,7 +201,22 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
 
             # Handle HTTP status codes
             if "HTTP/1.1 200 OK" not in response:
-                print("Error: Could not fetch URL -", new_url)
+                status_code = response.split()[1]
+
+                if status_code == "301":
+                    # HTTP redirect, try again with new URL
+                    new_url = response.split("Location: ")[1].split("\r\n")[0]
+                    if new_url not in visited_urls:
+                        to_be_crawled.append(new_url)
+                elif status_code in ("403", "404"):
+                    # Forbidden or not found, skip this URL
+                    print(f"Error: Could not fetch URL - {new_url}")
+                elif status_code == "500":
+                    # Internal server error, try again
+                    to_be_crawled.append(new_url)
+                else:
+                    print(
+                        f"Error: Unexpected status code - {status_code} for URL - {new_url}")
                 continue
 
             # Parse the response for URLs and secret flags
@@ -212,8 +225,8 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
 
     if len(secret_flags) == 5:
         print("All flags found!")
-        for flag in secret_flags:
-            print(flag)
+        for i, flag in enumerate(secret_flags):
+            print("Flag", i + 1, ":", flag)
     else:
         print("Could not find all flags.")
 
@@ -266,8 +279,6 @@ def main():
     cookies = cookie_jar(response_login)
     cookie3 = "sessionid=" + cookies["sessionid"]
     cookie4 = "csrftoken=" + cookies["csrftoken"]
-    print(cookie3)
-    print(cookie4)
 
     # Send request to go to my fakebook page
     send_get_request(fakebook, sock, host, cookie3, cookie4)
