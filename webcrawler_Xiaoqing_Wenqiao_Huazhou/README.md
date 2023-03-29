@@ -1,4 +1,4 @@
-Crawler project README.md
+# Web Crawler project
 
 Group member:
 Name: Xiaoqing Meng  NUID: 002983054
@@ -25,13 +25,12 @@ Two biggest challenges as follows
 - How to handle the cookies - sessionid and crvftoken. Since we're using the same `send_get_request` function for every GET request, some of them don't need cookies, some need one cookie, some need two cookies, I spent some time to figure out which one need what kind of cookies. Also, since the header have strict formatting requirements, I tested many times to pass the cookies in correct format.
 - Increament buffer size and check for content length in the `receive_msg` function, I tested thousands of time to process any response from the server.
 
-
 Overview of how to test the code:
 
 You can add print function to each step in the `main()` fucntion, especially for each response message to see the status code and actual content, you can also print out the header info in the `send_get_request` function to see the cookie value. For example, add `print(headers + "---HEADER HERE")` after the `headers += "\r\n"` line in the `send_get_request` function.
 Based on these prints, you can see each step clearly.
 
-Who worked on what part(s) of the code: 
+Who worked on what part(s) of the code:
 
 All three of us discussed on how to start the project and provided solutions. After discussion, we decided to use breadth first search to crawl the website.
 Xiaoqing did the majority of the code development, including solving the problems with the cookies, testing on user login and set GET and POST requests, optimizing the `receive_msg` funciton to process the request.
