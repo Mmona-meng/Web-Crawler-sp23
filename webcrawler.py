@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# author: Mmona-meng
 
 import cgi
 import socket
@@ -52,6 +53,7 @@ class FakebookHTMLParser(HTMLParser):
         # Looks for the secret_flag class and extracts the secret flag from the inner text.
         if "FLAG" in data:
             secret_flags.add(data.strip().split(":")[-1])
+            print("Secret flag found: {}".format(data.strip().split(":")[-1]))
 
 
 def parse_cmd_line():
