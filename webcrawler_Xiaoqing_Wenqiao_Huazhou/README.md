@@ -1,6 +1,7 @@
 # Web Crawler project
 
 Group member:
+
 Name: Xiaoqing Meng  NUID: 002983054
 
 Name: Wenqiao Xu  NUID: 002978212
