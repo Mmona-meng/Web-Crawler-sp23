@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# author: Mmona Meng
+# author: Xiaoqing Meng
 
 import cgi
 import socket
@@ -20,7 +20,7 @@ middlewaretoken = ""
 
 
 class FakebookHTMLParser(HTMLParser):
-    """g
+    """
     The FakebookHTMLParser extends the HTML Parser to parse through the server response for tags in search of more URLs and/or secret flags respectively.
     """
 
@@ -38,7 +38,7 @@ class FakebookHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             for name, value in attrs:
-                # Looks for anchor tags and extracts their href attribute as the next URL to be crawled.
+                # Looks for anchor tags and extracts their href attribute as the next URL to be crawled, and only if there is only one attribute.
                 if name == 'href' and '/fakebook/' in value and len(attrs) == 1:
                     to_be_crawled.append(value)
 
@@ -54,7 +54,7 @@ class FakebookHTMLParser(HTMLParser):
         # Looks for the secret_flag class and extracts the secret flag from the inner text.
         if "FLAG" in data:
             secret_flags.add(data.strip().split(":")[-1])
-            print("Secret flag found: {}".format(data.strip().split(":")[-1]))
+            # print("Secret flag found: {}".format(data.strip().split(":")[-1]))
 
 
 def parse_cmd_line():
@@ -123,8 +123,11 @@ def receive_msg(sock):
         response = sock.recv(buffer_size)
         if response:
             received_msg += response
+            # extract the content length from the header if it is not already extracted
             if not content_length:
+                # find the end of the header
                 header_end = received_msg.find(b"\r\n\r\n")
+                # if the header is found
                 if header_end != -1:
                     # extract the content length from the header
                     header = received_msg[:header_end]
@@ -132,6 +135,7 @@ def receive_msg(sock):
                     if content_length == 0:
                         break
             if content_length:
+                # check if the content length has been reached
                 if len(received_msg) >= content_length + header_end + 4:
                     # all the data has been received
                     break
@@ -142,7 +146,7 @@ def receive_msg(sock):
     return received_msg
 
 
-def getContent_length(msg):
+def getContent_length(msg):  # extract the content length from the header
     """Extracts the content length of the URL"""
     header_list = msg.split("\r\n")
     for header in header_list:
@@ -218,18 +222,18 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
                     # Internal server error, try again
                     to_be_crawled.append(new_url)
                 else:
-                    print(
-                        f"Error: Unexpected status code - {status_code} for URL - {new_url}")
+                    # print(f"Error: Unexpected status code - {status_code} for URL - {new_url}")
+                    continue
                 continue
 
             # Parse the response for URLs and secret flags
             parser.feed(response)
-            print("Crawled URL -", new_url)
+            # print("Crawled URL -", new_url)
 
     if len(secret_flags) == 5:
-        print("All flags found!")
-        for i, flag in enumerate(secret_flags):
-            print("Flag", i + 1, ":", flag)
+        # print("All flags found!")
+        for flag in secret_flags:
+            print(flag)
     else:
         print("Could not find all flags.")
 

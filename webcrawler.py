@@ -19,7 +19,7 @@ middlewaretoken = ""
 
 
 class FakebookHTMLParser(HTMLParser):
-    """g
+    """
     The FakebookHTMLParser extends the HTML Parser to parse through the server response for tags in search of more URLs and/or secret flags respectively.
     """
 
