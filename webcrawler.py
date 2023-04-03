@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# author: Mmona-meng
 
-import cgi
+# author: Xiaoqing Meng
+
 import socket
 import sys
 import ssl
@@ -57,7 +57,7 @@ class FakebookHTMLParser(HTMLParser):
 
 
 def parse_cmd_line():
-    # Parses the command line arguments for username and password. Throws error for invalid info
+    """ Parses the command line arguments for username and password. Throws error for invalid info. """
 
     username = ""
     password = ""
@@ -90,14 +90,13 @@ def create_socket():
         sys.exit("Connection error.: {}".format(str(e)))
 
 
-# this function will help you send the get request
 def send_get_request(path, sock, host, cookie1=None, cookie2=None):
     """
     Sends GET request to the server with appropriate header fields, and handles cookies. Sends this header file to the server using socket
     """
     headers = f"GET {path} HTTP/1.1\r\n{host}\r\n"
     cookies = ""
-    # add cookies to the header if they exist， and separate them with a semicolon
+    # add cookies to the header if they exist, and separate them with a semicolon
     if cookie1:
         cookies += f"{cookie1}"
     if cookie2:
@@ -109,28 +108,34 @@ def send_get_request(path, sock, host, cookie1=None, cookie2=None):
     sock.sendall(headers.encode('utf-8'))
 
 
-# this function will help you to receive message from the server for any request sent by the client
 def receive_msg(sock):
     """
+    Receives message from the server for any request sent by the client
     Receives message in a loop based on the content length given in the header
     """
     buffer_size = 4096  # Use a larger buffer size
     content_length = 0
     received_msg = bytearray()  # Use a bytearray to store the received data
-    # keep receiving data until the content length is reached
-    while True:
+
+    while True:  # keep receiving data until the content length is reached
         response = sock.recv(buffer_size)
         if response:
             received_msg += response
+
+            # extract the content length from the header if it is not already extracted
             if not content_length:
+                # find the end of the header
                 header_end = received_msg.find(b"\r\n\r\n")
+                # if the header is found
                 if header_end != -1:
                     # extract the content length from the header
                     header = received_msg[:header_end]
                     content_length = getContent_length(header.decode())
                     if content_length == 0:
                         break
+
             if content_length:
+                # check if the content length has been reached
                 if len(received_msg) >= content_length + header_end + 4:
                     # all the data has been received
                     break
@@ -142,16 +147,16 @@ def receive_msg(sock):
 
 
 def getContent_length(msg):
-    """Extracts the content length of the URL"""
+    # extract the content length from the header
     header_list = msg.split("\r\n")
     for header in header_list:
         if header.startswith("Content-Length: "):
             return int(header[16:])
 
 
-# this function will help you to extract cookies from the response message
 def cookie_jar(msg):
     """
+    Extract cookies from the response message
     Stores the session and/or the csrf cookies, return cookies
     """
     cookies = {}
@@ -164,7 +169,6 @@ def cookie_jar(msg):
     return cookies
 
 
-# HTTP POST request to login
 def login_user(sock, path, host, body_len, body, cookie1=None, cookie2=None):
     """
     Creates a POST request and sends it to login to the fakebook site
@@ -195,6 +199,7 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
     while to_be_crawled and len(secret_flags) < 5:
         # Use breadth-first search to crawl URLs
         new_url = to_be_crawled.popleft()
+
         if new_url not in visited_urls:
             visited_urls.add(new_url)
 
@@ -219,6 +224,7 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
                 else:
                     print(
                         f"Error: Unexpected status code - {status_code} for URL - {new_url}")
+                    continue
                 continue
 
             # Parse the response for URLs and secret flags
@@ -227,8 +233,8 @@ def start_crawling(msg, sock, host, cookie3, cookie4):
 
     if len(secret_flags) == 5:
         print("All flags found!")
-        for i, flag in enumerate(secret_flags):
-            print("Flag", i + 1, ":", flag)
+        for flag in secret_flags:
+            print(flag)
     else:
         print("Could not find all flags.")
 
