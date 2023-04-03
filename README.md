@@ -14,6 +14,14 @@ To execute the program, you can run either of the following commands in your ter
 
 The first command is for running the program on a Windows or Unix-based system, while the second command is a executable for running it on a Unix-based system.
 
+The username is the prefix of your northeastern.edu email address, and password is your NUID.
+
+For test purposes, you can use the following credentials:
+
+username: meng.xiaoq
+
+password: 002983054
+
 The program can handle various HTTP status codes, such as 301, 403, 404, and 500, depending on the situation. If there are any issues with the program, you can add print functions to each step of the main() function to see the status code and actual content.
 
 After running the program, you will see a list of secret flags, which match the content of the file "secret_flags.txt".
