@@ -18,9 +18,7 @@ The username is the prefix of your northeastern.edu email address, and password 
 
 For test purposes, you can use the following credentials:
 
-username: meng.xiaoq
-
-password: 002983054
+*hidden
 
 The program can handle various HTTP status codes, such as 301, 403, 404, and 500, depending on the situation. If there are any issues with the program, you can add print functions to each step of the main() function to see the status code and actual content.
 
