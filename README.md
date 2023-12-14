@@ -24,10 +24,6 @@ The program can handle various HTTP status codes, such as 301, 403, 404, and 500
 
 After running the program, you will see a list of secret flags, which match the content of the file "secret_flags.txt".
 
-## Credits
-
-The project was developed by Xiaoqing Meng.
-
 ## License
 
 MIT License
